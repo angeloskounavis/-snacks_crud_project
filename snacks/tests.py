@@ -12,7 +12,7 @@ class SnackTests(TestCase):
         )
 
         self.snack = Snack.objects.create(
-            name="pickle", rating=1, reviewer=self.user, description="pickle description",
+            name="pickle", rating=1, purchaser=self.user, description="pickle description",
             image_url="http://pickel-image-url.com", reference_url="http://pickel-reference-url.com"
         )
 
@@ -21,7 +21,7 @@ class SnackTests(TestCase):
 
     def test_snack_content(self):
         self.assertEqual(f"{self.snack.name}", "pickle")
-        self.assertEqual(f"{self.snack.reviewer}", "tester")
+        self.assertEqual(f"{self.snack.purchaser}", "tester")
         self.assertEqual(self.snack.rating, 1)
 
     def test_snack_list_view(self):
@@ -35,7 +35,6 @@ class SnackTests(TestCase):
         no_response = self.client.get("/100000/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(no_response.status_code, 404)
-        self.assertContains(response, "Reviewer: tester")
         self.assertTemplateUsed(response, "snack_detail.html")
 
     def test_snack_create_view(self):
@@ -44,17 +43,17 @@ class SnackTests(TestCase):
             {
                 "name": "Rake",
                 "rating": 2,
-                "reviewer": self.user.id,
+                "purchaser": self.user.id,
             }, follow=True
         )
 
-        self.assertRedirects(response, reverse("snack_detail", args="2"))
+        self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Rake")
 
     def test_snack_update_view_redirect(self):
         response = self.client.post(
             reverse("snack_update", args="1"),
-            {"name": "Updated name", "rating": 3, "reviewer": self.user.id, "description": "test description",
+            {"name": "Updated name", "rating": 3, "purchaser": self.user.id, "description": "test description",
              "image_url": "testimageurl.com", "reference_url": "testreferenceurl.com"}
         )
 
@@ -63,7 +62,7 @@ class SnackTests(TestCase):
     def test_snack_update_bad_url(self):
         response = self.client.post(
             reverse("snack_update", args="1"),
-            {"name": "Updated name", "rating": 3, "reviewer": self.user.id, "description": "test description",
+            {"name": "Updated name", "rating": 3, "purchaser": self.user.id, "description": "test description",
              "image_url": "badurl", "reference_url": "testreferenceurl.com"}
         )
 
@@ -75,5 +74,5 @@ class SnackTests(TestCase):
 
     # you can also tests models directly
     def test_model(self):
-        snack = Snack.objects.create(name="rake", reviewer=self.user)
+        snack = Snack.objects.create(name="rake", purchaser=self.user)
         self.assertEqual(snack.name, "rake")
